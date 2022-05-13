@@ -15,8 +15,9 @@ define(['N/currentRecord','N/search','N/currency','N/ui/dialog','N/record','N/qu
          if (list == 'item' && name == 'custcol_dangot_original_item'){
             try{
                 var itemID = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_original_item'});
-                if (isNullOrEmpty(itemID)){
+                if (!isNullOrEmpty(itemID)){
                     var Custid = rec.getValue('entity');
+                    var High_Rate = false
                     var Tran_Date = rec.getValue('trandate')
                     var Price_Level = rec.getValue('custbody_dangot_price_list')
                     var Tran_currency = rec.getValue('currency');
@@ -25,6 +26,14 @@ define(['N/currentRecord','N/search','N/currency','N/ui/dialog','N/record','N/qu
                     if (isNullOrEmpty(Price_Level)){
                             Price_Level = '1'
                     }
+                    log.debug({
+                        title: 'Cust Item',
+                        details: itemID
+                    })
+                    log.debug({
+                        title: 'Cust ',
+                        details: Custid
+                    })
                     if(!isNullOrEmpty(itemID) && !isNullOrEmpty(Custid)){   
                         var statment = `select
                                         itemtype,
@@ -62,7 +71,12 @@ define(['N/currentRecord','N/search','N/currency','N/ui/dialog','N/record','N/qu
                                         where i.id = ${itemID} 
                                         fetch first 1 rows only `
                         var pl_query = query.runSuiteQL({query:statment}).asMappedResults()
-                    }  
+                        
+                    }
+                    log.debug({
+                        title: 'Change Query',
+                        details: pl_query
+                    })  
                     if (pl_query[0].itemtype == 'NonInvtPart'){
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item',value: itemID})
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'item',value: itemID});
@@ -70,6 +84,11 @@ define(['N/currentRecord','N/search','N/currency','N/ui/dialog','N/record','N/qu
                     else{
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item',value: '22765'})
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'item',value: '22765'})
+                    }
+                    if (Record.getText({fieldId: string}) == 'T' && Tran_currency == 5 && PL_Price_Currency == 1){
+                        //Tran Currency is ILS (5) and Line Currency is USD (1)
+                        High_Rate = true
+                        log.debug({title: 'High Rate', details: High_Rate})
                     }
                     if (!isNullOrEmpty(pl_query[0].item)){  
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'price',value: '-1'});
