@@ -4,8 +4,8 @@
  * @NModuleScope SameAccount
  */
 
-define(['N/currentRecord','N/search','N/currency','N/ui/dialog','N/record','N/query'],
-    function (currentRecord,search,currency,ui,record,query) {
+define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/record','N/query'],
+    function (currentRecord,format,search,currency,ui,record,query) {
         var exports = {};
         function fieldChanged(scriptContext) {
          var rec = scriptContext.currentRecord;
@@ -19,6 +19,8 @@ define(['N/currentRecord','N/search','N/currency','N/ui/dialog','N/record','N/qu
                     var Custid = rec.getValue('entity');
                     var High_Rate = false
                     var Tran_Date = rec.getValue('trandate')
+                    log.debug({title: 'Format Date',details: formatDate(Tran_Date)})
+                    log.debug({title: 'Rate',details: HRDollar(formatDate(Tran_Date))})
                     var Price_Level = rec.getValue('custbody_dangot_price_list')
                     var Tran_currency = rec.getValue('currency');
                     var Conversion_Rate = 1
@@ -85,16 +87,18 @@ define(['N/currentRecord','N/search','N/currency','N/ui/dialog','N/record','N/qu
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item',value: '22765'})
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'item',value: '22765'})
                     }
-                    if (Record.getText({fieldId: string}) == 'T' && Tran_currency == 5 && PL_Price_Currency == 1){
+                    if (rec.getText({fieldId: 'custbody_h_usd_rate'}) == 'T' && Tran_currency == 5 && pl_query[0].currency == 1){
                         //Tran Currency is ILS (5) and Line Currency is USD (1)
                         High_Rate = true
                         log.debug({title: 'High Rate', details: High_Rate})
+                        log.debug({title: 'Date',details: Tran_Date})
+                        log.debug({title: 'Rate',details: HRDollar(formatDate(Tran_Date))})
                     }
                     if (!isNullOrEmpty(pl_query[0].item)){  
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'price',value: '-1'});
                         if (!isNullOrEmpty(pl_query[0].rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price',value: pl_query[0].rate })}; 
                         if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_item_currency',value: pl_query[0].currency })}; 
-                        if (Tran_currency != PL_Price_Currency){
+                        if (Tran_currency != pl_query[0].currency){
                             var Conversion_Rate = currency.exchangeRate({source: pl_query[0].currency, target: Tran_currency,date:Tran_Date})
                         }
                         var ratecalc = pl_query[0].rate * Conversion_Rate
@@ -346,6 +350,22 @@ define(['N/currentRecord','N/search','N/currency','N/ui/dialog','N/record','N/qu
             return true;
             }
         return false;
+        }
+        function HRDollar(date) {
+            var Rate_QL = query.runSuiteQL({
+                    query : `select 
+                            custrecord_hdr_exchange_rate as fx
+                            from 
+                            customrecord_h_usd_rate
+                            where custrecord_hdr_date <= '${date}'
+                            order by custrecord_hdr_date DESC
+                            fetch first 1 rows only`
+          }).asMappedResults();
+            return Rate_QL[0].fx
+        }
+        function formatDate(testDate){
+            var responseDate=format.format({value:testDate,type:format.Type.DATE});
+            return responseDate
         }
         exports.fieldChanged = fieldChanged;
         exports.validateLine = validateLine;
