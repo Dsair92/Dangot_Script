@@ -225,7 +225,6 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
                 if (sublistName === 'item'){
                     var RecalcPrice = false
                     var AgrType = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_bs_agr_type'});
-                    //var RecalcPrice = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_recalc_price'});
                     var Original_Currency = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden'});
                     var Original_Price = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price_hidden'});
                     var Original_Conversion_Rate = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_conversion_rate'});
