@@ -28,39 +28,9 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
                     }
                     if(!isNullOrEmpty(itemID) && !isNullOrEmpty(Custid)){   
                         var statment = `select
-                                        itemtype,
-                                        pl.*
-                                        from item as i
-                                        left join ( 
-                                            select
-                                                c.custrecord_cp_item as item ,
-                                                'customer' as  type,
-                                                c.custrecord_cp_currency as currency,
-                                                c.custrecord_cp_rate as rate,
-                                                c.custrecord_cp_recurring_rate as recurring_rate,
-                                                c.custrecord_cp_billing_cycle as billing_cycle,
-                                                c.custrecord_cp_charging_type as charge_type,
-                                                c.custrecord_cp_recurring_rate_2 as recurring_rate_2,
-                                                c.custrecord_cp_billing_cycle_2 as billing_cycle_2,
-                                                c.custrecord_cp_charging_type_2 as charge_type_2
-                                            from customrecord_customer_price_list as c 
-                                            where c.custrecord_cp_customer = ${Custid}
-                                                UNION ALL
-                                            select
-                                                p.custrecord_price_item as item,
-                                                'price' as type,
-                                                p.custrecord_price_currency as currency,
-                                                p.custrecord_price_rate as rate,
-                                                p.custrecord_price_recurring_rate as recurring_rate,
-                                                p.custrecord_price_billing_cycle as billing_cycle,
-                                                p.custrecord_price_charging_type as charge_type,
-                                                p.custrecord_price_recurring_rate_2 as recurring_rate_2,
-                                                p.custrecord_price_billing_cycle_2 as billing_cycle_2,
-                                                p.custrecord_price_charging_type_2 as charge_type_2
-                                            from customrecord_price_list as p 
-                                                where p.custrecord_price_price_level = ${Price_Level}
-                                            ) as pl on pl.item = i.id
-                                        where i.id = ${itemID} 
+                                        itemtype
+                                        from item
+                                        where id = ${itemID} 
                                         fetch first 1 rows only `
                         var pl_query = query.runSuiteQL({query:statment}).asMappedResults()
                         
@@ -70,42 +40,11 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
                         details: pl_query
                     })  
                     if (pl_query[0].itemtype == 'NonInvtPart'){
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item',value: itemID})
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'item',value: itemID});
                     }
                     else{
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item',value: '22765'})
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'item',value: '22765'})
                     }
-                    if (rec.getText({fieldId: 'custbody_h_usd_rate'}) == 'T' && Tran_currency == 5 && pl_query[0].currency == 1){
-                        //Tran Currency is ILS (5) and Line Currency is USD (1)
-                        High_Rate = true
-                        log.debug({title: 'High Rate', details: High_Rate})
-                        log.debug({title: 'Date',details: Tran_Date})
-                        log.debug({title: 'Rate',details: HRDollar(formatDate(Tran_Date))})
-                    }
-                    if (!isNullOrEmpty(pl_query[0].item)){  
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'price',value: '-1'});
-                        if (!isNullOrEmpty(pl_query[0].rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price',value: pl_query[0].rate })}; 
-                        if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_item_currency',value: pl_query[0].currency })}; 
-                        if (Tran_currency != pl_query[0].currency){
-                            var Conversion_Rate = currency.exchangeRate({source: pl_query[0].currency, target: Tran_currency,date:Tran_Date})
-                        }
-                        var ratecalc = pl_query[0].rate * Conversion_Rate
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'rate',value: ratecalc.toFixed(2) ,ignoreFieldChange:true});
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'amount',value: pl_query[0].rate * Conversion_Rate * itemqty,ignoreFieldChange:true});
-                        if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: pl_query[0].currency })};
-                        if (!isNullOrEmpty(pl_query[0].rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price_hidden',value: pl_query[0].rate })};    
-                    }
-                    else {
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'price',value: '-1'});
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'rate',value: 0 ,ignoreFieldChange:true});
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'amount',value: 0 ,ignoreFieldChange:true});
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: '' ,ignoreFieldChange:true});
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price_hidden',value: 0 ,ignoreFieldChange:true});   
-                    } 
-                    rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_price_level',value: Price_Level,ignoreFieldChange:true});
-                    rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_conversion_rate',value: Conversion_Rate });
                 }
             log.debug('****-Field Change End-****',name);
             }catch(e)
@@ -120,98 +59,114 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
                 if (name == 'item' && list == 'item') {   
                     log.debug('****- PostSorsing Start-****',name);     
                     var item = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'item'});
-                    if (!isNullOrEmpty(item)) {                        
-                        var Custid = rec.getValue('entity');
-                        var Tran_Date = rec.getValue('trandate')
-                        var Price_Level = rec.getValue('custbody_dangot_price_list')
-                        var Tran_currency = rec.getValue('currency');
-                        var Conversion_Rate = 1
-                        var itemqty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'quantity'});
-                        if (isNullOrEmpty(Price_Level)){
-                            Price_Level = '1'
-                        }
-                        if(!isNullOrEmpty(Custid)){
-                            var query_str = `
-                            select
-                            itemtype,
-                            pl.*,
-                            case when type = 'customer' then 9 else ${Price_Level} end as pricelist
-                            from item as i
-                            left join ( 
-                                select
-                                    c.custrecord_cp_item as item ,
-                                    'customer' as  type,
-                                    c.custrecord_cp_currency as currency,
-                                    c.custrecord_cp_rate as rate,
-                                    c.custrecord_cp_recurring_rate as recurring_rate,
-                                    c.custrecord_cp_billing_cycle as billing_cycle,
-                                    c.custrecord_cp_charging_type as charge_type,
-                                    c.custrecord_cp_recurring_rate_2 as recurring_rate_2,
-                                    c.custrecord_cp_billing_cycle_2 as billing_cycle_2,
-                                    c.custrecord_cp_charging_type_2 as charge_type_2
-                                from customrecord_customer_price_list as c 
-                                where c.custrecord_cp_customer = ${Custid}
-                                    UNION ALL
-                                select
-                                    p.custrecord_price_item as item,
-                                    'price' as type,
-                                    p.custrecord_price_currency as currency,
-                                    p.custrecord_price_rate as rate,
-                                    p.custrecord_price_recurring_rate as recurring_rate,
-                                    p.custrecord_price_billing_cycle as billing_cycle,
-                                    p.custrecord_price_charging_type as charge_type,
-                                    p.custrecord_price_recurring_rate_2 as recurring_rate_2,
-                                    p.custrecord_price_billing_cycle_2 as billing_cycle_2,
-                                    p.custrecord_price_charging_type_2 as charge_type_2
-                                from customrecord_price_list as p 
-                                    where p.custrecord_price_price_level = ${Price_Level}
-                                 ) as pl on pl.item = i.id
-                            where i.id = ${item}
-                            fetch first 1 rows only`
-                        var pl_query = query.runSuiteQL({ query: query_str }).asMappedResults()
-                        log.debug("pl_query", JSON.stringify(pl_query))
-                        if (!isNullOrEmpty(pl_query[0].item) ){ 
-                            Price_Level = pl_query[0].pricelist;
-                            log.debug({
-                                title: 'Price Level',
-                                details: Price_Level
-                            })
-                            if (!isNullOrEmpty(pl_query[0].rate)) {rec.setCurrentSublistValue({ sublistId: 'item', fieldId: 'custcol_original_price', value: pl_query[0].rate })}; 
-                            if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_item_currency',value: pl_query[0].currency })}; 
-                            if (!isNullOrEmpty(pl_query[0].recurring_rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_reccuring_rate',value: pl_query[0].recurring_rate })}; 
-                            if (!isNullOrEmpty(pl_query[0].billing_cycle)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_bs_billing_cycle',value: pl_query[0].billing_cycle })}; 
-                            if (!isNullOrEmpty(pl_query[0].charge_type)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_recurring_charge_type',value: pl_query[0].charge_type })}; 
-                            if (!isNullOrEmpty(pl_query[0].recurring_rate_2)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_recurring_second_year',value: pl_query[0].recurring_rate_2 })}; 
-                            if (!isNullOrEmpty(pl_query[0].billing_cycle_2)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_billing_cycle_2',value: pl_query[0].billing_cycle_2 })}; 
-                            if (!isNullOrEmpty(pl_query[0].charge_type_2)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_charge_type_2',value: pl_query[0].charge_type_2 })}; 
-                            if (Tran_currency != pl_query[0].currency){
-                                if (Tran_currency == 5 && pl_query[0].currency == 1 && rec.getText({fieldId: 'custbody_h_usd_rate'}) == 'T'){
-                                    Conversion_Rate = HRDollar(formatDate(Tran_Date));
-                                }
-                                else{
-                                    Conversion_Rate = currency.exchangeRate({source: pl_query[0].currency, target: Tran_currency,date:Tran_Date})
-                                }
+                    var PL_Item = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item'});
+                    var PriceList_Item = item;
+                    if (item != PL_Item){
+                        if (!isNullOrEmpty(item)) {                        
+                            var Custid = rec.getValue('entity');
+                            var Tran_Date = rec.getValue('trandate')
+                            var Price_Level = rec.getValue('custbody_dangot_price_list')
+                            var Quote_Item = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_original_item'});
+                            if (!isNullOrEmpty(Quote_Item)){
+                                PriceList_Item = Quote_Item
                             }
-                            var ratecalc = pl_query[0].rate * Conversion_Rate
-                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'rate',value: ratecalc.toFixed(2) ,ignoreFieldChange:true});
-                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'amount',value: pl_query[0].rate * Conversion_Rate * itemqty,ignoreFieldChange:true});
-                            if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: pl_query[0].currency })};
-                            if (!isNullOrEmpty(pl_query[0].rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price_hidden',value: pl_query[0].rate })};   
+                            var Tran_currency = rec.getValue('currency');
+                            var Conversion_Rate = 1
+                            var itemqty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'quantity'});
+                            if (isNullOrEmpty(Price_Level)){
+                                Price_Level = '1'
+                            }
+                            if(!isNullOrEmpty(Custid)){
+                                var query_str = `
+                                select
+                                i.itemtype,
+                                i.description as desc,
+                                pl.*,
+                                case when type = 'customer' then 9 else ${Price_Level} end as pricelist
+                                from item as i
+                                left join ( 
+                                    select
+                                        c.custrecord_cp_item as item ,
+                                        'customer' as  type,
+                                        c.custrecord_cp_currency as currency,
+                                        c.custrecord_cp_rate as rate,
+                                        c.custrecord_cp_recurring_rate as recurring_rate,
+                                        c.custrecord_cp_billing_cycle as billing_cycle,
+                                        c.custrecord_cp_charging_type as charge_type,
+                                        c.custrecord_cp_recurring_rate_2 as recurring_rate_2,
+                                        c.custrecord_cp_billing_cycle_2 as billing_cycle_2,
+                                        c.custrecord_cp_charging_type_2 as charge_type_2
+                                    from customrecord_customer_price_list as c 
+                                    where c.custrecord_cp_customer = ${Custid}
+                                        UNION ALL
+                                    select
+                                        p.custrecord_price_item as item,
+                                        'price' as type,
+                                        p.custrecord_price_currency as currency,
+                                        p.custrecord_price_rate as rate,
+                                        p.custrecord_price_recurring_rate as recurring_rate,
+                                        p.custrecord_price_billing_cycle as billing_cycle,
+                                        p.custrecord_price_charging_type as charge_type,
+                                        p.custrecord_price_recurring_rate_2 as recurring_rate_2,
+                                        p.custrecord_price_billing_cycle_2 as billing_cycle_2,
+                                        p.custrecord_price_charging_type_2 as charge_type_2
+                                    from customrecord_price_list as p 
+                                        where p.custrecord_price_price_level = ${Price_Level}
+                                    ) as pl on pl.item = i.id
+                                where i.id = ${PriceList_Item}
+                                fetch first 1 rows only`
+                            var pl_query = query.runSuiteQL({ query: query_str }).asMappedResults()
+                            log.debug("pl_query", JSON.stringify(pl_query))
+                            if (!isNullOrEmpty(pl_query[0].item) ){ 
+                                Price_Level = pl_query[0].pricelist;
+                                log.debug({
+                                    title: 'Price Level',
+                                    details: Price_Level
+                                })
+                                var HD_Value = false
+                                var High_Dollar = rec.getText({fieldId: 'custbody_h_usd_rate'});
+                                if (High_Dollar == 'T'){
+                                    HD_Value = true
+                                }
+                                if (!isNullOrEmpty(pl_query[0].rate)) {rec.setCurrentSublistValue({ sublistId: 'item', fieldId: 'description', value: pl_query[0].desc })};
+                                if (!isNullOrEmpty(pl_query[0].rate)) {rec.setCurrentSublistValue({ sublistId: 'item', fieldId: 'custcol_original_price', value: pl_query[0].rate })}; 
+                                if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_item_currency',value: pl_query[0].currency })}; 
+                                if (!isNullOrEmpty(pl_query[0].recurring_rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_reccuring_rate',value: pl_query[0].recurring_rate })}; 
+                                if (!isNullOrEmpty(pl_query[0].billing_cycle)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_bs_billing_cycle',value: pl_query[0].billing_cycle })};
+                                //if (!isNullOrEmpty(pl_query[0].billing_cycle)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_high_usd_hidden',value: High_Dollar })}; 
+                                if (!isNullOrEmpty(pl_query[0].charge_type)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_recurring_charge_type',value: pl_query[0].charge_type })}; 
+                                if (!isNullOrEmpty(pl_query[0].recurring_rate_2)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_recurring_second_year',value: pl_query[0].recurring_rate_2 })}; 
+                                if (!isNullOrEmpty(pl_query[0].billing_cycle_2)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_billing_cycle_2',value: pl_query[0].billing_cycle_2 })}; 
+                                if (!isNullOrEmpty(pl_query[0].charge_type_2)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_charge_type_2',value: pl_query[0].charge_type_2 })}; 
+                                if (Tran_currency != pl_query[0].currency){
+                                    if (Tran_currency == 5 && pl_query[0].currency == 1 && High_Dollar == 'T'){
+                                        Conversion_Rate = HRDollar(formatDate(Tran_Date));
+                                    }
+                                    else{
+                                        Conversion_Rate = currency.exchangeRate({source: pl_query[0].currency, target: Tran_currency,date:Tran_Date})
+                                    }
+                                }
+                                var ratecalc = pl_query[0].rate * Conversion_Rate
+                                rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'rate',value: ratecalc.toFixed(2) ,ignoreFieldChange:true});
+                                rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'amount',value: pl_query[0].rate * Conversion_Rate * itemqty,ignoreFieldChange:true});
+                                if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: pl_query[0].currency })};
+                                if (!isNullOrEmpty(pl_query[0].rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price_hidden',value: pl_query[0].rate })};   
+                            }
+                            else {
+                                rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'rate',value: 0 ,ignoreFieldChange:true});
+                                rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'amount',value: 0 ,ignoreFieldChange:true});
+                                rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: '' ,ignoreFieldChange:true});
+                                rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price_hidden',value: 0 ,ignoreFieldChange:true});
+                            }           
+                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item',value: item ,ignoreFieldChange:true});
+                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_price_level',value: Price_Level,ignoreFieldChange:true});
+                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_conversion_rate',value: Conversion_Rate });                      
+                            
+                            }
                         }
-                        else {
-                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'rate',value: 0 ,ignoreFieldChange:true});
-                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'amount',value: 0 ,ignoreFieldChange:true});
-                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: '' ,ignoreFieldChange:true});
-                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price_hidden',value: 0 ,ignoreFieldChange:true});
-                        }           
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item',value: item ,ignoreFieldChange:true});
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_price_level',value: Price_Level,ignoreFieldChange:true});
-                        rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_conversion_rate',value: Conversion_Rate });                      
-                        
+                        log.debug('****- PostSorsing End-****',name);
                     }
-                    }
-                    log.debug('****- PostSorsing End-****',name);
-                }                    
+                }                 
             }catch(e){
                 log.debug("****- PostSorsing End-****",e)
             }
@@ -231,7 +186,7 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
                     var Item_Rate = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'rate'});
                     var Item_Currency = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_item_currency'});
                     if (isNullOrEmpty(Item_Currency)){
-                        Line_Currency = Tran_currency
+                        Item_Currency = Tran_currency
                     }
                     if (Original_Currency !=Item_Currency){
                         RecalcPrice = true
@@ -263,9 +218,13 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
                                 if (Tran_currency != Item_Currency){
                                     if (rec.getText('custbody_h_usd_rate') == 'T' && Tran_currency == 1 & Item_Currency == 5){
                                         Conversion_Rate = HRDollar(formatDate(Tran_Date));
+                                        log.debug({
+                                            title: 'Conversion  ',
+                                            details: Conversion_Rate
+                                        })
                                     }
                                     else{
-                                        Conversion_Rate = currency.exchangeRate({source: Line_Currency, target: Tran_currency,date:Tran_Date})
+                                        Conversion_Rate = currency.exchangeRate({source: Item_Currency, target: Tran_currency,date:Tran_Date})
                                     }
                                 }
                             var ratecalc = Item_Price * Conversion_Rate
@@ -369,7 +328,7 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
             var responseDate=format.format({value:testDate,type:format.Type.DATE});
             return responseDate
         }
-        //exports.fieldChanged = fieldChanged;
+        exports.fieldChanged = fieldChanged;
         exports.validateLine = validateLine;
         exports.postSourcing = postSourcing;
         return exports
