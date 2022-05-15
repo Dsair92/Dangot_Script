@@ -216,7 +216,7 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
                             var itemqty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'quantity'});
                             if (!isNullOrEmpty(Item_Price)){
                                 if (Tran_currency != Item_Currency){
-                                    if (rec.getText('custbody_h_usd_rate') == 'T' && Tran_currency == 1 & Item_Currency == 5){
+                                    if (rec.getText('custbody_h_usd_rate') == 'T' && Tran_currency == 5 & Item_Currency == 1){
                                         Conversion_Rate = HRDollar(formatDate(Tran_Date));
                                         log.debug({
                                             title: 'Conversion  ',
