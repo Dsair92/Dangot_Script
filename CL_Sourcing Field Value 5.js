@@ -195,6 +195,26 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
                         details: '{Original_Currency:'+Original_Currency+',Item_Currency :' + Item_Currency +'}'
                         })
                     }
+                    var Conversion_Rate = 1;
+                    var Tran_Date = rec.getValue('trandate');
+                    var Tran_currency = rec.getValue('currency');
+                    if (!isNullOrEmpty(Item_Price)){
+                        if (rec.getText('custbody_h_usd_rate') == 'T' && Tran_currency == 5 & Item_Currency == 1){
+                            Conversion_Rate = HRDollar(formatDate(Tran_Date));
+                        }
+                        else{
+                            if (Tran_currency != Item_Currency){
+                                Conversion_Rate = currency.exchangeRate({source: Item_Currency, target: Tran_currency,date:Tran_Date})
+                            }
+                        }
+                    }   
+                    if (Original_Conversion_Rate != Conversion_Rate ){
+                        RecalcPrice = true
+                        log.debug({
+                        title: 'Original_Conversion_Rate <> Conversion_Rate',
+                        details: '{Original_Conversion_Rate:'+Original_Conversion_Rate+',Conversion_Rate :' + Conversion_Rate +'}'
+                        })
+                    }
                     if (Item_Rate!=(Original_Price*Original_Conversion_Rate).toFixed(2)){
                         RecalcPrice = true
                         log.debug({
@@ -210,28 +230,11 @@ define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/re
                         })
                     }
                     if (RecalcPrice){
-                            var Tran_Date = rec.getValue('trandate')
-                            var Tran_currency = rec.getValue('currency');
-                            var Conversion_Rate = 1
                             var itemqty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'quantity'});
-                            if (!isNullOrEmpty(Item_Price)){
-                                if (Tran_currency != Item_Currency){
-                                    if (rec.getText('custbody_h_usd_rate') == 'T' && Tran_currency == 5 & Item_Currency == 1){
-                                        Conversion_Rate = HRDollar(formatDate(Tran_Date));
-                                        log.debug({
-                                            title: 'Conversion  ',
-                                            details: Conversion_Rate
-                                        })
-                                    }
-                                    else{
-                                        Conversion_Rate = currency.exchangeRate({source: Item_Currency, target: Tran_currency,date:Tran_Date})
-                                    }
-                                }
                             var ratecalc = Item_Price * Conversion_Rate
                             rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'rate',value: ratecalc.toFixed(2) ,ignoreFieldChange:true});
                             rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'amount',value: Item_Price * Conversion_Rate * itemqty,ignoreFieldChange:true});
                             rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_price_level',value:'8',ignoreFieldChange:true});//Custom Price Calc
-                        }
                     }
                     var Order_type = rec.getValue('custbody_dangot_sale_type');
                     if (Order_type == 1){
