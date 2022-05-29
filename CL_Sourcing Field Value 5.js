@@ -170,6 +170,16 @@
             log.debug("****- PostSorsing End-****",e)
         }
     }
+    function pageInit (scriptContext){
+        log.debug("****- Line Int-****",'Start')
+        var rec = scriptContext.currentRecord;
+        
+            var item = rec.getSublist({sublistId: 'item'});
+            var rate = item.getColumn({fieldId: 'rate'});
+            rate.isDisabled = true
+
+        log.debug("****- Line Int-****",'End')
+    }
     function validateLine  (scriptContext) {
         try{
             var rec = scriptContext.currentRecord;
@@ -329,6 +339,7 @@
         var responseDate=format.format({value:testDate,type:format.Type.DATE});
         return responseDate
     }
+    exports.pageInit = pageInit;
     exports.fieldChanged = fieldChanged;
     exports.validateLine = validateLine;
     exports.postSourcing = postSourcing;
