@@ -62,7 +62,7 @@
                 var PL_Item = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item'});
                 var PriceList_Item = item;
                 if (item != PL_Item){
-                   if (!isNullOrEmpty(item)) {                        
+                    if (!isNullOrEmpty(item)) {                        
                         var Custid = rec.getValue('entity');
                         var Tran_Date = rec.getValue('trandate')
                         var Price_Level = rec.getValue('custbody_dangot_price_list')
@@ -71,6 +71,7 @@
                             PriceList_Item = Quote_Item
                         }
                         var Tran_currency = rec.getValue('currency');
+                        var Item_Currency = Tran_currency
                         var Conversion_Rate = 1
                         var itemqty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'quantity'});
                         if (isNullOrEmpty(Price_Level)){
@@ -117,6 +118,9 @@
                             fetch first 1 rows only`
                         var pl_query = query.runSuiteQL({ query: query_str }).asMappedResults()
                         log.debug("pl_query", JSON.stringify(pl_query))
+                        if (!isNullOrEmpty(pl_query[0].currency)){
+                            Item_Currency = pl_query[0].currency
+                        }
                         if (!isNullOrEmpty(pl_query[0].item) ){ 
                             Price_Level = pl_query[0].pricelist;
                             log.debug({
@@ -130,10 +134,9 @@
                             }
                             if (!isNullOrEmpty(pl_query[0].rate)) {rec.setCurrentSublistValue({ sublistId: 'item', fieldId: 'description', value: pl_query[0].desc })};
                             if (!isNullOrEmpty(pl_query[0].rate)) {rec.setCurrentSublistValue({ sublistId: 'item', fieldId: 'custcol_original_price', value: pl_query[0].rate })}; 
-                            if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_item_currency',value: pl_query[0].currency })}; 
+                            if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_item_currency',value: Item_Currency })};
                             if (!isNullOrEmpty(pl_query[0].recurring_rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_reccuring_rate',value: pl_query[0].recurring_rate })}; 
                             if (!isNullOrEmpty(pl_query[0].billing_cycle)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_bs_billing_cycle',value: pl_query[0].billing_cycle })};
-                            //if (!isNullOrEmpty(pl_query[0].billing_cycle)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_high_usd_hidden',value: High_Dollar })}; 
                             if (!isNullOrEmpty(pl_query[0].charge_type)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_recurring_charge_type',value: pl_query[0].charge_type })}; 
                             if (!isNullOrEmpty(pl_query[0].recurring_rate_2)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_recurring_second_year',value: pl_query[0].recurring_rate_2 })}; 
                             if (!isNullOrEmpty(pl_query[0].billing_cycle_2)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_billing_cycle_2',value: pl_query[0].billing_cycle_2 })}; 
@@ -149,23 +152,23 @@
                             var ratecalc = pl_query[0].rate * Conversion_Rate
                             rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'rate',value: ratecalc.toFixed(2) ,ignoreFieldChange:true});
                             rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'amount',value: pl_query[0].rate * Conversion_Rate * itemqty,ignoreFieldChange:true});
-                            if (!isNullOrEmpty(pl_query[0].currency)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: pl_query[0].currency })};
+                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_item_currency',value: Item_Currency })};
+                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: Item_Currency })};
                             if (!isNullOrEmpty(pl_query[0].rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price_hidden',value: pl_query[0].rate })};   
                         }
                         else {
                             rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'rate',value: 0 ,ignoreFieldChange:true});
                             rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'amount',value: 0 ,ignoreFieldChange:true});
-                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: '' ,ignoreFieldChange:true});
+                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_item_currency',value: Item_Currency ,ignoreFieldChange:true});
+                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_currency_hidden',value: Item_Currency ,ignoreFieldChange:true});
                             rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_price_hidden',value: 0 ,ignoreFieldChange:true});
                         }           
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item',value: item ,ignoreFieldChange:true});
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_price_level',value: Price_Level,ignoreFieldChange:true});
                         rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_original_conversion_rate',value: Conversion_Rate });                      
                         }
-                    }
-                    log.debug('****- PostSorsing End-****',name);
-                }
-            }                 
+                    log.debug('****- PostSorsing End-****',name);                   
+            }                
         }catch(e){
             log.debug("****- PostSorsing End-****",e)
         }
