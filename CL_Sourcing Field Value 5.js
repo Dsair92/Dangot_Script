@@ -7,15 +7,22 @@
  define(['N/currentRecord','N/format','N/search','N/currency','N/ui/dialog','N/record','N/query'],
  function (currentRecord,format,search,currency,ui,record,query) {
     var exports = {};
+    var rec
+    function pageInit (scriptContext){
+        rec = rec || scriptContext.currentRecord;
+        var subidiary = rec.getValue('subsidiary');
+        if (subidiary == '14'){ // Dangot
+            var item = rec.getSublist({sublistId: 'item'});
+            var rate = item.getColumn({fieldId: 'rate'});
+            rate.isDisabled = true
+        }
+    }
     function fieldChanged(scriptContext) {
-        var rec = scriptContext.currentRecord;
+        rec = rec || scriptContext.currentRecord;
         var name = scriptContext.fieldId;
         var list = scriptContext.sublistId;
         var subidiary = rec.getValue('subsidiary');
         if (subidiary == '14'){//Dangot 
-
-        
-        //log.debug('Field Change',scriptContext)
             if (list == 'item' && name == 'custcol_dangot_original_item'){
                 try{
                     log.debug('****-Field Change Start-****',name);
@@ -58,7 +65,7 @@
     }
     function postSourcing(scriptContext) {
         try{
-            var rec = scriptContext.currentRecord;
+            rec = rec || scriptContext.currentRecord;
             var name = scriptContext.fieldId;
             var list = scriptContext.sublistId;
             var subidiary = rec.getValue('subsidiary');
@@ -69,10 +76,11 @@
                 var PL_Item = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item'});
                 var PriceList_Item = item;
                 if (item != PL_Item){
-                    if (!isNullOrEmpty(item)) {                        
+                    if (!isNullOrEmpty(item)) {  
                         var Custid = rec.getValue('entity');
-                        var Tran_Date = rec.getValue('trandate')
-                        var Price_Level = rec.getValue('custbody_dangot_price_list')
+                        var Tran_Date = rec.getValue('trandate');
+                        var Order_type = rec.getValue('custbody_dangot_sale_type');
+                        var Price_Level = rec.getValue('custbody_dangot_price_list');
                         var Quote_Item = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_dangot_original_item'});
                         if (!isNullOrEmpty(Quote_Item)){
                             PriceList_Item = Quote_Item
@@ -125,22 +133,22 @@
                             fetch first 1 rows only`
                         var pl_query = query.runSuiteQL({ query: query_str }).asMappedResults()
                         log.debug("pl_query", JSON.stringify(pl_query))
-                        if (isNullOrEmpty(pl_query[0].currency)){
-                            Item_Currency = Tran_currency;
+                        if (!isNullOrEmpty(pl_query[0].currency)){
+                            Item_Currency = pl_query[0].currency;
                             log.debug("Item_Currency", Item_Currency);
+                        }
+                        if (Order_type == 3){
+                            //פעימות
+                            pl_query[0].rate = 0
                         }
                         if (!isNullOrEmpty(pl_query[0].item) ){ 
                             Price_Level = pl_query[0].pricelist;
                             log.debug({
                                 title: 'Price Level',
                                 details: Price_Level
-                            })
-                            var HD_Value = false
+                            });
                             var High_Dollar = rec.getText({fieldId: 'custbody_h_usd_rate'});
-                            if (High_Dollar == 'T'){
-                                HD_Value = true
-                            }
-                            if (!isNullOrEmpty(pl_query[0].rate)) {rec.setCurrentSublistValue({ sublistId: 'item', fieldId: 'description', value: pl_query[0].desc })};
+                            if (!isNullOrEmpty(pl_query[0].desc)) {rec.setCurrentSublistValue({ sublistId: 'item', fieldId: 'description', value: pl_query[0].desc})};
                             if (!isNullOrEmpty(pl_query[0].rate)) {rec.setCurrentSublistValue({ sublistId: 'item', fieldId: 'custcol_original_price', value: pl_query[0].rate })}; 
                             if (!isNullOrEmpty(pl_query[0].recurring_rate)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_reccuring_rate',value: pl_query[0].recurring_rate })}; 
                             if (!isNullOrEmpty(pl_query[0].billing_cycle)){rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_bs_billing_cycle',value: pl_query[0].billing_cycle })};
@@ -185,18 +193,9 @@
             log.debug("****- PostSorsing End-****",e)
         }
     }
-    function pageInit (scriptContext){
-        var rec = scriptContext.currentRecord;
-        var subidiary = rec.getValue('subsidiary');
-        if (subidiary == '14'){ // Dangot
-            var item = rec.getSublist({sublistId: 'item'});
-            var rate = item.getColumn({fieldId: 'rate'});
-            rate.isDisabled = true
-        }
-    }
     function validateLine  (scriptContext) {
         try{
-            var rec = scriptContext.currentRecord;
+            rec = rec || scriptContext.currentRecord;
             var sublistName = scriptContext.sublistId;
             var subidiary = rec.getValue('subsidiary');
             if (subidiary == '14'){// Dangot
