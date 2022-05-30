@@ -20,7 +20,7 @@
         from customrecord_end_cust_creation`
         }).asMappedResults()
         for (var i = 0; i < end_user_ql.length; i++) {
-            log.debug({title: 'Data :' + i ,details: end_user_ql[i]});
+            log.debug({title: 'Data :' + i ,details: JSON.stringify(end_user_ql[i])});
             /*
             try{
                 var BP = record.delete({type: 'customrecord_billing_plan',id: ID,isDynamic: true,});
