@@ -132,7 +132,7 @@
                          type : 'customrecord_agr',
                          isDynamic : false
                      })
-                     Create_Agr.setValue('customform',134); // Recurring Agr
+                     Create_Agr.setValue('customform',133); // Recurring Agr // SB1 > 134
                      Create_Agr.setValue('custrecord_agr_type',2); // Recurring Agr
                      Create_Agr.setValue('custrecord_agr_customer',IB[i].Customer);
                      Create_Agr.setValue('custrecord_agr_status',1);//Active
@@ -208,13 +208,13 @@
                                      IB_Update.setValue('custrecord_ib_sla_hours', IB[i].SLA);
                                      IB_Update.setValue('custrecord_ib_currency', IB[i].Currency);
                                      if (AgrType == 1) {
-                                         IB_Update.setValue('customform', 122)//Warranty
+                                         IB_Update.setValue('customform', 133)//Warranty >> SB1 = 122
                                          IB_Update.setValue('custrecord_ib_site_war_start_date', FormatDate(IB[i].FfDate));
                                          IB_Update.setValue('custrecord_ib_site_war_month', IB[i].Site_Warranty_Months);
                                          IB_Update.setValue('custrecord_ib_lab_war_month', IB[i].Lab_Warranty_Months);
                                      }
                                      if (AgrType == 2) {
-                                         IB_Update.setValue('customform', 135)//Recurring
+                                         IB_Update.setValue('customform', 132)//Recurring >> SB1 = 135
                                          IB_Update.setValue('custrecord_ib_billing_cycle', IB[i].BillingCycle);
                                          IB_Update.setValue('custrecord_ib_agr',Agr);
                                          IB_Update.setValue('custrecord_ib_renewal_amount',IB[i].Renewal_Rate);
@@ -272,13 +272,13 @@
                              IBRecord.setValue('custrecord_ib_end_customer', IB[i].EndCustomer);
                              IBRecord.setValue('custrecord_ib_sla_hours', IB[i].SLA);
                              if (AgrType == 1) {
-                                 IBRecord.setValue('customform', 122)//Warranty
+                                 IBRecord.setValue('customform', 133)//Warranty >> SB1 122
                                  IBRecord.setValue('custrecord_ib_site_war_start_date', Billing_Date);
                                  if (!isNullOrEmpty(IB[i].Site_Warranty_Months)){IBRecord.setValue('custrecord_ib_site_war_month', Number(IB[i].Site_Warranty_Months))}
                                  if (!isNullOrEmpty(IB[i].Lab_Warranty_Months)){IBRecord.setValue('custrecord_ib_lab_war_month', Number(IB[i].Lab_Warranty_Months))}
                              }
                              if (AgrType == 2) {
-                                 IBRecord.setValue('customform', 135);//Recurring
+                                 IBRecord.setValue('customform', 132);//Recurring >> SB1 135
                                  IBRecord.setValue('custrecord_ib_billing_cycle', IB[i].BillingCycle);
                                  IBRecord.setValue('custrecord_ib_agr',Agr);
                                  if (IB[i].Agr_Sub_Type == '2'){ Billing_Date = addDays(Billing_Date,5)}                         
