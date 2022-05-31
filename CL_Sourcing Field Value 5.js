@@ -276,7 +276,7 @@
                     if (!isNullOrEmpty(AgrType)){
                         var Misssing_Fieds = []
                         if (AgrType == '1'){
-                            var Site_Warranty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_lab_warranty'});
+                            var Site_Warranty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_site_warranty'});
                             var Lab_Warranty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_lab_warranty'});
                             if(isNullOrEmpty(Site_Warranty)){ Misssing_Fieds.push('Site Warranty Month')};
                             if(isNullOrEmpty(Lab_Warranty)){ Misssing_Fieds.push('Lab Warranty Month')};
