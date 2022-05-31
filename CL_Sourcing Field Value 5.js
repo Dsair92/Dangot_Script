@@ -314,7 +314,7 @@
                                     Text = Text + ', '+Misssing_Fieds[i]
                                 }
                             }
-                            ui.alert({title: 'Missing Billing Values',message: 'Please enter the follwing fields: '+ Text +' before submit the line' })
+                            ui.alert({title:'<p style="text-align:right;" dir="rlt">שדות חסרים </p>',message: 'Please enter the follwing fields: '+ Text +' before submit the line' })
                             return false
                         } 
                     }
