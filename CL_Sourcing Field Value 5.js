@@ -23,6 +23,9 @@
         var list = scriptContext.sublistId;
         var subidiary = rec.getValue('subsidiary');
         if (subidiary == '14'){//Dangot 
+            var item = rec.getSublist({sublistId: 'item'});
+            item.getColumn({fieldId: 'rate'}).isDisabled = true
+            item.getColumn({fieldId: 'amount'}).isDisabled = true
             if (list == 'item' && name == 'custcol_dangot_original_item'){
                 try{
                     log.debug('****-Field Change Start-****',name);
@@ -70,7 +73,10 @@
             var list = scriptContext.sublistId;
             var subidiary = rec.getValue('subsidiary');
             if (subidiary == '14'){ // Dangot
-                if (name == 'item' && list == 'item') {   
+                if (name == 'item' && list == 'item') {  
+                var item = rec.getSublist({sublistId: 'item'});
+                item.getColumn({fieldId: 'rate'}).isDisabled = true;
+                item.getColumn({fieldId: 'amount'}).isDisabled = true;
                 log.debug('****- PostSorsing Start-****',name);     
                 var item = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'item'});
                 var PL_Item = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_price_list_item'});
@@ -193,6 +199,15 @@
             log.debug("****- PostSorsing End-****",e)
         }
     }
+    function lineInit (scriptContext){
+        rec = rec || scriptContext.currentRecord;
+        var subidiary = rec.getValue('subsidiary');
+        if (subidiary == '14'){ // Dangot
+            var item = rec.getSublist({sublistId: 'item'});
+            var rate = item.getColumn({fieldId: 'rate'});
+            rate.isDisabled = true
+        }
+    }
     function validateLine  (scriptContext) {
         try{
             rec = rec || scriptContext.currentRecord;
@@ -298,7 +313,7 @@
                         }
                         var Error_Length = Misssing_Fieds.length;
                         if (Error_Length == 1){
-                            ui.alert({title: '<p style="text-align:right;" dir="rlt">שדה חסר</p>',message:'<p style="text-align:right;" dir="rlt">:אנא הזן </p>'+ Misssing_Fieds +'<p style="text-align:right;" dir="rlt"> על מנת לשמור את השורה</p>' })
+                            ui.alert({title: '<p style="text-align:right;" dir="rlt">שדה חסר</p>',message:'<p style="text-align:right;" dir="rlt">אנא הזן '+Misssing_Fieds+'על מנת לשמור את השורה </p>' })
                             return false
                         }
                         log.debug({
@@ -314,7 +329,7 @@
                                     Text = Text + ', '+Misssing_Fieds[i]
                                 }
                             }
-                            ui.alert({title:'<p style="text-align:right;" dir="rlt">שדות חסרים </p>',message: '<p style="text-align:right;" dir="rlt">:אנא השלם את השדות הבאים</p>'+ Text +'<p style="text-align:right;" dir="rlt">על מנת לשמור את השורה</p>' })
+                            ui.alert({title:'<p style="text-align:right;" dir="rlt">שדות חסרים </p>',message: '<p style="text-align:right;" dir="rlt">:אנא השלם את השדות הבאים</p>'+'<p style="text-align:right;" dir="rlt">'+ Text +'על מנת לשמור את השורה </p>' })
                             return false
                         } 
                     }
@@ -360,5 +375,6 @@
     exports.fieldChanged = fieldChanged;
     exports.validateLine = validateLine;
     exports.postSourcing = postSourcing;
+    exports.lineInit = lineInit;
     return exports
 });
