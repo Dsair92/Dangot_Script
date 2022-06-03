@@ -278,27 +278,27 @@
                         if (AgrType == '1'){
                             var Site_Warranty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_site_warranty'});
                             var Lab_Warranty = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_lab_warranty'});
-                            if(isNullOrEmpty(Site_Warranty)){ Misssing_Fieds.push('Site Warranty Month')};
-                            if(isNullOrEmpty(Lab_Warranty)){ Misssing_Fieds.push('Lab Warranty Month')};
+                            if(isNullOrEmpty(Site_Warranty)){ Misssing_Fieds.push('חודשי אחריות באתר')};
+                            if(isNullOrEmpty(Lab_Warranty)){ Misssing_Fieds.push('חודשי אחריות במעבדה')};
                         }
                         if (AgrType == '2'){
                             var Billing_Cycle = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_bs_billing_cycle'});
                             var Sub_Type = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_agr_sub_type'});
                             var Rate = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_reccuring_rate'});
                             var First_Period = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_month_first_period'});
-                            if(isNullOrEmpty(Billing_Cycle)){ Misssing_Fieds.push('Billing Cycle')};
-                            if(isNullOrEmpty(Sub_Type)){ Misssing_Fieds.push('Sub_Type')};
-                            if(isNullOrEmpty(Rate)){ Misssing_Fieds.push('Reccuring Rate')};
+                            if(isNullOrEmpty(Billing_Cycle)){ Misssing_Fieds.push('מחזור חיוב')};
+                            if(isNullOrEmpty(Sub_Type)){ Misssing_Fieds.push('תת הסכם')};
+                            if(isNullOrEmpty(Rate)){ Misssing_Fieds.push('חיוב מחזורי')};
                             if (!isNullOrEmpty(First_Period)){
                                 var Billing_Cycle_2 = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_billing_cycle_2'});
                                 var Rate_2 = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_recurring_second_year'});
-                                if(isNullOrEmpty(Billing_Cycle_2)){ Misssing_Fieds.push('Billng Cycle For Second Period')};
-                                if(isNullOrEmpty(Rate_2)){ Misssing_Fieds.push('Reccurrig Rate For Second Period')};
+                                if(isNullOrEmpty(Billing_Cycle_2)){ Misssing_Fieds.push('מחזור חיוב תקופה שנייה')};
+                                if(isNullOrEmpty(Rate_2)){ Misssing_Fieds.push('חויב מחזורי תקופה שנייה')};
                             }
                         }
                         var Error_Length = Misssing_Fieds.length;
                         if (Error_Length == 1){
-                            ui.alert({title: 'Missing Billing Value',message: 'Please enter '+ Misssing_Fieds +' before submit the line' })
+                            ui.alert({title: '<p style="text-align:right;" dir="rlt">שדה חסר</p>',message:'<p style="text-align:right;" dir="rlt">:אנא הזן </p>'+ Misssing_Fieds +'<p style="text-align:right;" dir="rlt"> על מנת לשמור את השורה</p>' })
                             return false
                         }
                         log.debug({
@@ -314,7 +314,7 @@
                                     Text = Text + ', '+Misssing_Fieds[i]
                                 }
                             }
-                            ui.alert({title:'<p style="text-align:right;" dir="rlt">שדות חסרים </p>',message: 'Please enter the follwing fields: '+ Text +' before submit the line' })
+                            ui.alert({title:'<p style="text-align:right;" dir="rlt">שדות חסרים </p>',message: '<p style="text-align:right;" dir="rlt">:אנא השלם את השדות הבאים</p>'+ Text +'<p style="text-align:right;" dir="rlt">על מנת לשמור את השורה</p>' })
                             return false
                         } 
                     }
