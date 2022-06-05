@@ -109,7 +109,7 @@
                     }
                     
                 }
-                //record.delete({type:'customrecord_end_cust_creation',id:end_user_ql[i].rec_id,isDynamic: true});
+                record.delete({type:'customrecord_end_cust_creation',id:end_user_ql[i].rec_id,isDynamic: true});
             }catch(e){
                 log.error({
                     title: 'Creation Error',
