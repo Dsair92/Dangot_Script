@@ -56,7 +56,7 @@
                             rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'item',value: itemID});
                         }
                         else{
-                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'item',value: '8605'})
+                            rec.setCurrentSublistValue({sublistId: 'item',fieldId: 'item',value: '34026'})
                         }//SB1 Item   22765
                     }
                 log.debug('****-Field Change End-****',name);
