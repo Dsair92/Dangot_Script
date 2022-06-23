@@ -74,19 +74,20 @@ define(["N/ui/serverWidget","N/record","N/redirect","N/workflow","N/runtime"],
                     if(recType == 'invoice'){
                         var rejectionStatus   = scriptObj.getParameter({name:'custscript_hb_rejection_status'});	
                         var jsobObj = {
-                            custbody_hb_rejection_reason:invRejectionValue,
-                            custbody_hb_rejected_by: runtime.getCurrentUser().id,
-                            approvalstatus: rejectionStatus,
-                            custbody_hb_invoice_rejection_reas:rejMemo
+                            custbody_hb_rejection_reason:           invRejectionValue,
+                            custbody_hb_rejected_by:                runtime.getCurrentUser().id,
+                            approvalstatus:                         rejectionStatus,
+                            custbody_hb_invoice_rejection_reas:     rejMemo
                     }
                     }else if(recType == 'customrecordzab_subscription'){ 
                         var subscriptionStatus =  context.request.parameters.custpage_subscription_status;
                         log.debug('subscriptionStatus',subscriptionStatus)
                         var jsobObj = {
-                            custrecord_hb_s_rejection_list:invRejectionValue,
-                            custrecord_hb_subscription_rej:rejMemo,
-                            custrecord_hb_s_rejected_by:runtime.getCurrentUser().id,
-                            custrecord_hb_subscription_status:subscriptionStatus
+                            custrecord_hb_s_rejection_list:         invRejectionValue,
+                            custrecord_hb_subscription_rej:         rejMemo,
+                            custrecord_hb_s_rejected_by:            runtime.getCurrentUser().id,
+                            custrecord_hb_subscription_status:      subscriptionStatus,
+                            custrecord_hb_s_sfdc_status_sync: '1'
                         }
                     }
                     log.debug("jsobObj ",jsobObj);
