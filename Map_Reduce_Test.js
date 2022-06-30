@@ -48,6 +48,7 @@ define(["N/url","N/record","N/search","N/render","N/email","N/runtime","N/file",
 		try{
 
 			var scriptObj = runtime.getCurrentScript(); 
+			/*
 			var emailTemplate   = "";
 			var senderEmail   = scriptObj.getParameter({name:'custscript_hb_mr_sender_email_ds'});
 			var secondaryRoleValue = scriptObj.getParameter({name:'custscript_hb_mr_sec_contact_value'});
@@ -56,7 +57,7 @@ define(["N/url","N/record","N/search","N/render","N/email","N/runtime","N/file",
 			var cmEmailTemplate   = scriptObj.getParameter({name:'custscript_hb_mr_cm_email_template'});
 
 
-
+*/
 			var recordId = context.key;
 			var contObjText = JSON.parse(context.values[0])["values"];
 

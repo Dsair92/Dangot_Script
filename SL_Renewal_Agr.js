@@ -147,7 +147,7 @@ function ActionScreen(request, response) {
         var amount_data = request.getParameter('custpage_change_amount');
         amount.setDefaultValue(amount_data)
 
-        var charge_type = form.addField('custpage_charge_type', 'select', 'Charge Type', 'customlist_dangot_recurr_charge_type', 'custpage_batch_group').setLayoutType('outside');
+        var charge_type = form.addField('custpage_charge_type', 'select', 'Charge Type', 'customrecord_dangot_recurr_charge_type', 'custpage_batch_group').setLayoutType('outside');
         var charge_type_data = request.getParameter('custpage_charge_type');
         charge_type.setDefaultValue(charge_type_data)
 
@@ -171,7 +171,7 @@ function ActionScreen(request, response) {
                 subList.addField('custpage_ib_rate', 'text', 'Rate');
                 subList.addField('custpage_ib_charge_type', 'text', 'Charge Type');
                 subList.addField('custpage_ib_renewal_amount', 'CURRENCY', 'renewal amount').setDisplayType('entry');
-                subList.addField('custpage_charge_type_select', 'select', 'Charge Type', 'customlist_dangot_recurr_charge_type');
+                subList.addField('custpage_charge_type_select', 'select', 'Charge Type', 'customrecord_dangot_recurr_charge_type');
                 var month_warr_field = subList.addField('custpage_exclude_month_warr', 'text', 'Exclude Month Warranty')
                 subList.addField('custpage_discount', 'percent', 'Discount').setDisplayType('entry');
                 subList.addField('custpage_charge_amount', 'float', 'Charge Amount')//.setDisplayType('entry');
@@ -213,7 +213,7 @@ function ActionScreen(request, response) {
                 subList.addField('custpage_ib_rate', 'text', 'Rate');
                 subList.addField('custpage_ib_charge_type', 'text', 'Charge Type');
                 subList.addField('custpage_ib_renewal_amount', 'CURRENCY', 'renewal amount').setDisplayType('entry');
-                subList.addField('custpage_charge_type_select', 'select', 'Charge Type', 'customlist_dangot_recurr_charge_type');
+                subList.addField('custpage_charge_type_select', 'select', 'Charge Type', 'customrecord_dangot_recurr_charge_type');
                 subList.addField('custpage_exclude_month_warr', 'text', 'Exclude Month Warranty')
                 subList.addField('custpage_disabled', 'text', 'disabled').setDisplayType('hidden');
                 for (var i = 0; i < results.length; i++) {
@@ -468,5 +468,3 @@ function buildFormName(screenType) {
     else if (screenType == 2) { formName += ' Recurring' }
     return formName
 }
-
-
