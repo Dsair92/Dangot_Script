@@ -109,6 +109,9 @@
                         break
                         case '3' :
                         Agr_field = 'custentity_agr_printer'//Printer
+                        break
+                        case '4' :
+                        Agr_field = 'custentity_agr_barcode'//Barcode
                         break 
                     }                 
                     Agr = Cust_Load.getValue(Agr_field);
@@ -319,7 +322,7 @@
                     } catch (e) {
                         log.error({
                             title: 'Creation Error',
-                            details: '{JSON: ' + JSON.stringify(IB[i]) +  e + '}'
+                            details: '{JSON: ' + JSON.stringify(IB[i]) + ",Error:"+ e + '}'
                         })
                     }
                     if (GetUsage() < 100) {
