@@ -6,6 +6,7 @@ function ActionScreen(request, response) {
         var dataToUpdate = [];
         var dataToRemove = [];
         if (action == 1) {
+            var agr_Redirct = request.getParameter('custpage_agr');
             var status = request.getParameter('custpage_status');
             for (var i = 0; i < lineCount; i++) {
                 selected = request.getLineItemValue('custpage_res_sublist', 'custpage_process', i + 1);
@@ -53,8 +54,11 @@ function ActionScreen(request, response) {
             custscript_renewal_status: status,
         };
         nlapiScheduleScript('customscript_renewal_agr_ss', null, params);
-        if (action == 2) {
+        if (action == 2 ) {
             nlapiSetRedirectURL('record', 'customrecord_agr', agr_target, 'view', null);
+        }
+        if (action ==  1) {
+            nlapiSetRedirectURL('record', 'customrecord_agr', agr_Redirct, 'view', null);
         }
         else {
             var htmlHeader = form.addField('custpage_header', 'inlinehtml').setLayoutType('outsideabove', 'startrow');
@@ -244,7 +248,7 @@ function ActionScreen(request, response) {
     }
 }//end of suitlet
 
-//Renewal Agreement
+//Renewal Agreement - Get Data
 function getAgreementLines(status_data, agr_data, item_data, percent, sub_type_data, amount_data, charge_type_data) {
 
     nlapiLogExecution('debug', ' status_data: ' + status_data, 'agr_data: ' + agr_data)
