@@ -68,7 +68,7 @@
                         Currency: '5', // Always ILS  s[i].getValue({ name: 'currency', join: 'appliedToTransaction' }), Always ILS // 5
                         Customer: Customer,
                         Partner: s[i].getValue({ name: 'partner', join: 'appliedToTransaction' }),
-                        Agr_Sub_Type: s[i].getValue({ name: 'custitem_agr_sub_type', join: 'item' }),
+                        Agr_Sub_Type: s[i].getValue({ name: 'custcol_agr_sub_type', join: 'appliedToTransaction' }),
                         EndCustomer: s[i].getValue({ name: 'custcol_end_customer', join: 'appliedToTransaction' }),
                         Renewal_Rate: s[i].getValue({ name: 'custcol_recurring_second_year', join: 'appliedToTransaction' }),
                         Service_Start_Date: Service_Start_Date,//NEED EDIT
@@ -277,21 +277,23 @@
                                  IBRecord.setValue('custrecord_ib_charge_type', IB[i].Charge_Type);
                                  if (!isNullOrEmpty(IB[i].Service_End_Date)){IBRecord.setValue('custrecord_inactivation_date', FormatDate(IB[i].Service_End_Date))};
                                  if (!isNullOrEmpty(IB[i].Month_First_Period)){
-                                     var End_Date = ''
-                                     if  (IB[i].Agr_Sub_Type == '2'){
+                                    var End_Date = ''
+                                    if  (IB[i].Agr_Sub_Type == '2'){
                                         End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),4)
+                                        log.debug({
+                                            title: 'Wisepay',
+                                            details: IB[i].Wisepay
+                                        })
                                         IBRecord.setValue('custrecord_ib_wiseway',IB[i].Wisepay);
-                                     }
-                                     else { 
-                                         End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),-1)
-                                     }
-
-                                     IBRecord.setValue('custrecord_inactivation_date',End_Date);
-                                     IBRecord.setValue('custrecord_ib_cancelation_reason','1');//Cancelation Reason Reccurnig Process
-                                     IBRecord.setValue('custrecord_ib_renewal_billing_cycle', FormatDate(IB[i].BillingCycle_2));
-                                     //IBRecord.setValue('custrecord_ib_change_terms_recurring',true);
-                                     IBRecord.setValue('custrecord_ib_charge_type_renewal', FormatDate(IB[i].Charge_Type_2));
-                                     IBRecord.setValue('custrecord_ib_renewal_amount',IB[i].Renewal_Rate);
+                                        IBRecord.setValue('custrecord_ib_cancelation_reason','1');//Cancelation Reason Reccurnig Process
+                                    }else { 
+                                        End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),-1)
+                                    }
+                                    IBRecord.setValue('custrecord_inactivation_date',End_Date);
+                                    //IBRecord.setValue('custrecord_ib_renewal_billing_cycle', FormatDate(IB[i].BillingCycle_2));
+                                    //IBRecord.setValue('custrecord_ib_change_terms_recurring',true);
+                                    //IBRecord.setValue('custrecord_ib_charge_type_renewal', FormatDate(IB[i].Charge_Type_2));
+                                    IBRecord.setValue('custrecord_ib_renewal_amount',IB[i].Renewal_Rate);
                                  }
                              }
                              var IBrecID = IBRecord.save()
