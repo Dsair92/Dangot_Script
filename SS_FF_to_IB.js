@@ -44,6 +44,7 @@
                         Ff_Line_Id: s[i].getValue({ name: 'line' }),
                         So_Id: s[i].getValue({ name: 'internalid', join: 'appliedToTransaction' }),
                         SO_Line_ID: s[i].getValue({ name: 'line', join: 'appliedToTransaction' }),
+                        Wisepay: s[i].getValue({ name: 'custcol_wisepay', join: 'appliedToTransaction' }),
                         Item: s[i].getValue({ name: 'item' }),
                         Description: s[i].getValue({ name: 'displayname',join: 'item' }),
                         Item_type: s[i].getValue({ name: 'type', join: 'item' }),
@@ -93,6 +94,7 @@
                 else { LineCreatedIB = Number(IB[i].IbCreated) }
                 var IsSerial = IB[i].Item_serial;
                 var AgrType = IB[i].AgrType; 
+// ******Start Agreement Reccuring ****** //
                 if (AgrType == 2){
                     Cust_Load = record.load({
                         type : 'customer',
@@ -112,6 +114,9 @@
                         break
                         case '4' :
                         Agr_field = 'custentity_agr_barcode'//Barcode
+                        break 
+                        case '6' :
+                        Agr_field = 'custentity_agr_esl'//ESL
                         break 
                     }                 
                     Agr = Cust_Load.getValue(Agr_field);
@@ -133,6 +138,7 @@
                         Cust_Load.save({ignoreMandatoryFields: true})
                     }
                 }
+// ****** END Agreement Reccuring  ******   //           
                 var Line = IB[i];
                 var TrueID_FF = ''
                 var Detail_Empty = ''
@@ -147,6 +153,7 @@
                      details: Line
                 })
                 for (var j = 0 + LineCreatedIB; j < LineFFQty; j++) {
+                    // ****** Start IB Creation  ******   //   
                     try {
                         var FF = record.load({
                             type: 'itemfulfillment',
@@ -272,13 +279,14 @@
                                  if (!isNullOrEmpty(IB[i].Month_First_Period)){
                                      var End_Date = ''
                                      if  (IB[i].Agr_Sub_Type == '2'){
-                                         End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),4)
+                                        End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),4)
+                                        IBRecord.setValue('custrecord_ib_wiseway',IB[i].Wisepay);
                                      }
                                      else { 
                                          End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),-1)
                                      }
 
-                                     IBRecord.setValue('custrecord_inactivation_date',End_Date);//NEED EDIT
+                                     IBRecord.setValue('custrecord_inactivation_date',End_Date);
                                      IBRecord.setValue('custrecord_ib_cancelation_reason','1');//Cancelation Reason Reccurnig Process
                                      IBRecord.setValue('custrecord_ib_renewal_billing_cycle', FormatDate(IB[i].BillingCycle_2));
                                      //IBRecord.setValue('custrecord_ib_change_terms_recurring',true);
@@ -324,6 +332,7 @@
                             title: 'Creation Error',
                             details: '{JSON: ' + JSON.stringify(IB[i]) + ",Error:"+ e + '}'
                         })
+                            // ****** END IB Creation  ******   //  
                     }
                     if (GetUsage() < 100) {
                         var taskId = Reschedule();
