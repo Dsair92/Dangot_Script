@@ -11,55 +11,70 @@
  * Purpose 		: This script is used to send email with diagram attchment
  ********************************************************************/
 
- define(['N/url','N/record','N/email','N/runtime','N/file'],
-    function(url,record,email,runtime,file) {
+ define(['N/url','N/record','N/email','N/runtime','N/file','N/render'],
+    function(url,record,email,runtime,file,render) {
         var exports = {};
         function onAction(context) {
             try{
                 var script = runtime.getCurrentScript();
-                var Template = script.getParameter({ name: "custscript_email_template" });
                 var userObj = runtime.getCurrentUser();
                 var userID = userObj.id
-                log.debug({
-                    title: 'Data',
-                    details: JSON.stringify({User_ID: userID, Template : Template})
-                })
                 var Record = context.newRecord;
                 var recordId = Record.id;
-                log.debug('recordId',recordId);
-                var Attached = Record.getValue({
-                    fieldId: 'custbody_ilo_signed_document'
-                });
-                var Vendor_email = Record.getValue({
+                var Template = script.getParameter({ name: "custscript_email_template" });
+                var Attched_field_Params = script.getParameter({ name: "custscript_email_attachments_array" });
+                var Sender = script.getParameter({ name: "custscript_email_sender" });
+                if (isNullOrEmpty(Sender)){
+                    Sender = userObj.id
+                }
+                var Array_field = Attched_field_Params.split(",")
+                var Files_Attached = []
+                for (a = 0;a  < Array_field.length;a++){
+                    var Field = Array_field[a].toString()
+                    if (!isNullOrEmpty(Field)){
+                        log.debug({
+                            title: 'string*',
+                            details: Field
+                        })
+                        var Attached = Record.getValue({
+                            fieldId: 'custbody_ilo_signed_document'
+                        });
+                        if (!isNullOrEmpty(Attached)){
+                             var file_loaded = file.load({    
+                                id: Attached
+                            });
+        
+                            Files_Attached.push(file_loaded)
+                        }
+                    }
+                }
+                var Cust_email = Record.getValue({
                     fieldId: 'email'
                 });   
-                if(!isNullOrEmpty(Vendor_email)&&!isNullOrEmpty(Attached)){
-                    var senderId = 4148
-                    /*
-                    var attachments_File = file.load({    
-                        id: Attached
-                    });
-                    */
-                    var vendorID = Record.getValue({
+                if(!isNullOrEmpty(Cust_email)&& Files_Attached.length > 0){
+                    var Cust_iD = Record.getValue({
                         fieldId: 'entity'
+                    });                    
+                    var mergeResult = render.mergeEmail({
+                        templateId: Template,
+                        entity: null,
+                        recipient: null,
+                        supportCaseId: null, 
+                        transactionId: recordId,
+                        customRecord: null
                     });
-                    var RecType = Record.type
-                    log.debug({
-                        title: 'attachments_File',
-                        details: attachments_File
-                    });
+                    var emailSubject = mergeResult.subject; 
+                    var emailBody = mergeResult.body; 
                     email.send({
-                        author: senderId,
-                        recipients: Vendor_email,
-                        subject: 'Test Sample Email Module',
-                        body: 'email body',
-                        //attachments:[file.load({id: Attached})] ,
+                        author: Sender,
+                        recipients: Cust_email,
+                        subject: emailSubject,
+                        body: emailBody,
+                        attachments: Files_Attached ,
+                       
                         relatedRecords: {
-                            entityId: vendorID,
-                            customRecord: {
-                                id: recordId,
-                                recordType: RecType
-                            }    
+                            entityId: Cust_iD, 
+                            transactionId: recordId  
                         }
                     });  
                     log.debug('Record edit Sync ID',recordId);
