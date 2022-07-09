@@ -46,7 +46,7 @@
                         SO_Line_ID: s[i].getValue({ name: 'line', join: 'appliedToTransaction' }),
                         Wisepay: s[i].getValue({ name: 'custcol_wisepay', join: 'appliedToTransaction' }),
                         Item: s[i].getValue({ name: 'item' }),
-                        Description: s[i].getValue({ name: 'displayname',join: 'item' }),
+                        Description: s[i].getValue({ name: 'salesdescription',join: 'item' }),
                         Item_type: s[i].getValue({ name: 'type', join: 'item' }),
                         Item_serial: IsSerial,
                         Serial_N: Inventory_array,
@@ -262,73 +262,74 @@
                              IBRecord.setValue('custrecord_ib_partner', IB[i].Partner);
                              IBRecord.setValue('custrecord_ib_end_customer', IB[i].EndCustomer);
                              IBRecord.setValue('custrecord_ib_sla_hours', IB[i].SLA);
+                             IBRecord.setValue('custrecord_ib_description', IB[i].Description);
+                             
                              if (AgrType == 1) {
-                          //       IBRecord.setValue('customform', 133)//Warranty >> SB1 122
-                                 IBRecord.setValue('custrecord_ib_site_war_start_date', Billing_Date);
-                                 if (!isNullOrEmpty(IB[i].Site_Warranty_Months)){IBRecord.setValue('custrecord_ib_site_war_month', Number(IB[i].Site_Warranty_Months))}
-                                 if (!isNullOrEmpty(IB[i].Lab_Warranty_Months)){IBRecord.setValue('custrecord_ib_lab_war_month', Number(IB[i].Lab_Warranty_Months))}
-                             }
+                                IBRecord.setValue('customform', 133)//Warranty >> SB1 122
+                                IBRecord.setValue('custrecord_ib_site_war_start_date', Billing_Date);
+                                if (!isNullOrEmpty(IB[i].Site_Warranty_Months)){IBRecord.setValue('custrecord_ib_site_war_month', Number(IB[i].Site_Warranty_Months))}
+                                if (!isNullOrEmpty(IB[i].Lab_Warranty_Months)){IBRecord.setValue('custrecord_ib_lab_war_month', Number(IB[i].Lab_Warranty_Months))}
+                            }
                              if (AgrType == 2) {
-                              //   IBRecord.setValue('customform', 132);//Recurring >> SB1 135
-                                 IBRecord.setValue('custrecord_ib_billing_cycle', IB[i].BillingCycle);
-                                 IBRecord.setValue('custrecord_ib_agr',Agr);
-                                 if (IB[i].Agr_Sub_Type == '2'){ Billing_Date = addDays(Billing_Date,5)}                         
-                                 IBRecord.setValue('custrecord_ib_initial_billing_date', Billing_Date);
-                                 IBRecord.setValue('custrecord_ib_charge_type', IB[i].Charge_Type);
-                                 if (!isNullOrEmpty(IB[i].Service_End_Date)){IBRecord.setValue('custrecord_inactivation_date', FormatDate(IB[i].Service_End_Date))};
-                                 if (!isNullOrEmpty(IB[i].Month_First_Period)){
+                                IBRecord.setValue('customform', 132);//Recurring >> SB1 135
+                                IBRecord.setValue('custrecord_ib_billing_cycle', IB[i].BillingCycle);
+                                IBRecord.setValue('custrecord_ib_agr',Agr);
+                                if (IB[i].Agr_Sub_Type == '2'){ // Credit Terminal Sub_Type
+                                    Billing_Date = addDays(Billing_Date,5)
+                                    IBRecord.setValue('custrecord_ib_wiseway',IB[i].Wisepay);
+                                }                         
+                                IBRecord.setValue('custrecord_ib_initial_billing_date', Billing_Date);
+                                IBRecord.setValue('custrecord_ib_charge_type', IB[i].Charge_Type);
+                                if (!isNullOrEmpty(IB[i].Service_End_Date)){IBRecord.setValue('custrecord_inactivation_date', FormatDate(IB[i].Service_End_Date))};
+                                if (!isNullOrEmpty(IB[i].Month_First_Period)){
                                     var End_Date = ''
-                                    if  (IB[i].Agr_Sub_Type == '2'){
-                                        End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),4)
-                                        log.debug({
-                                            title: 'Wisepay',
-                                            details: IB[i].Wisepay
-                                        })
-                                        IBRecord.setValue('custrecord_ib_wiseway',IB[i].Wisepay);
-                                        IBRecord.setValue('custrecord_ib_cancelation_reason','1');//Cancelation Reason Reccurnig Process
-                                    }else { 
-                                        End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),-1)
+                                    switch (IB[i].Agr_Sub_Type){
+                                        case '2': // Credit_Terminal
+                                            End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),4)
+                                            IBRecord.setValue('custrecord_ib_cancelation_reason','1');//Cancelation Reason Reccurnig Process
+                                            IBRecord.setValue('custrecord_ib_renewal_billing_cycle', IB[i].BillingCycle_2);
+                                            IBRecord.setValue('custrecord_ib_charge_type_renewal', IB[i].Charge_Type_2);
+                                            IBRecord.setValue('custrecord_ib_renewal_amount',IB[i].Renewal_Rate);
+                                        break;
+                                        default :
+                                            End_Date = addDays(addMonths(IB[i].Service_Start_Date,IB[i].Month_First_Period),-1)
                                     }
                                     IBRecord.setValue('custrecord_inactivation_date',End_Date);
-                                    //IBRecord.setValue('custrecord_ib_renewal_billing_cycle', FormatDate(IB[i].BillingCycle_2));
+                                    //IBRecord.setValue('custrecord_ib_renewal_billing_cycle', IB[i].BillingCycle_2);
                                     //IBRecord.setValue('custrecord_ib_change_terms_recurring',true);
-                                    //IBRecord.setValue('custrecord_ib_charge_type_renewal', FormatDate(IB[i].Charge_Type_2));
-                                    IBRecord.setValue('custrecord_ib_renewal_amount',IB[i].Renewal_Rate);
-                                 }
-                             }
-                             var IBrecID = IBRecord.save()
-
-                             log.debug({
-                                 title: 'IB Created',
-                                 details: "{IBrec: " + IBrecID + ",Rec: " + JSON.stringify(IB[i]) + '}'
-                             })
-                             LineFF.setCurrentSublistValue({
-                                 sublistId: 'item',
-                                 fieldId: 'custcol_ib_created',
-                                 line: TrueID_FF,
-                                 value: (QtyFF + 1),
-                             });
-
-
-                             LineFF.commitLine({
-                                 sublistId: 'item'
-                             });
-                             var UpdateFF = FF.save();
-                             if (IsSerial== true) {
-                                 Inventory_N.setValue('custitemnumber_ib_related',IBrecID);
-                                 Inventory_N.save()
-                             }
-                             log.debug({
-                                 title: 'FF Update',
-                                 details: '{FF Update:' + UpdateFF + ',IBrec: ' + IBrecID + ",Rec: " + JSON.stringify(IB[i]) + '}'
-                             })
-                         }
-                         else {
-                             log.error({
-                                 title: 'Missmatch IB Data Error',
-                                 details: IB[i]
-                             })
-                         }
+                                    //IBRecord.setValue('custrecord_ib_charge_type_renewal', IB[i].Charge_Type_2);
+                                    //IBRecord.setValue('custrecord_ib_renewal_amount',IB[i].Renewal_Rate);
+                                }
+                            }
+                            var IBrecID = IBRecord.save()
+                            log.debug({
+                                title: 'IB Created',
+                                details: "{IBrec: " + IBrecID + ",Rec: " + JSON.stringify(IB[i]) + '}'
+                            })
+                            LineFF.setCurrentSublistValue({
+                                sublistId: 'item',
+                                fieldId: 'custcol_ib_created',
+                                line: TrueID_FF,
+                                value: (QtyFF + 1),
+                            });
+                            LineFF.commitLine({
+                                sublistId: 'item'
+                            });
+                            var UpdateFF = FF.save();
+                            if (IsSerial== true) {
+                                Inventory_N.setValue('custitemnumber_ib_related',IBrecID);
+                                Inventory_N.save()
+                            }
+                            log.debug({
+                                title: 'FF Update',
+                                details: '{FF Update:' + UpdateFF + ',IBrec: ' + IBrecID + ",Rec: " + JSON.stringify(IB[i]) + '}'
+                            })
+                        }else {
+                            log.error({
+                                title: 'Missmatch IB Data Error',
+                                details: IB[i]
+                            })
+                        }
                     } catch (e) {
                         log.error({
                             title: 'Creation Error',
@@ -343,21 +344,15 @@
                             details: '{Task ID:' + taskId + ', Last FF Update: ' + UpdateFF + ',Last IBrec: ' + IBrecID + ', Rec: ' + JSON.stringify(IB[i]) + '}'
                         })
                         return;
-                        }
                     }
                 }
-                     log.debug({
-                         title: 'Usage Remaining Rec N: ' + i + 'Qty: ' + (j + 1),
-                         details: GetUsage()
-                     })
-
-                 }
-
-
-
-
-
-             }
+            }
+            log.debug({
+                title: 'Usage Remaining Rec N: ' + i + 'Qty: ' + (j + 1),
+                details: GetUsage()
+            })
+        }
+    }
          
 
 
@@ -444,9 +439,9 @@
 
 
 
-     return {
-         execute: execute
-     };
+    return {
+        execute: execute
+    };
 
  }
 );
