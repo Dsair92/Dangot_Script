@@ -11,11 +11,19 @@
  * Purpose 		: This script is used to send email with diagram attchment
  ********************************************************************/
 
- define(['N/url','N/record','N/email','N/file'],
-    function(url,record,email,file) {
+ define(['N/url','N/record','N/email','N/runtime','N/file'],
+    function(url,record,email,runtime,file) {
         var exports = {};
         function onAction(context) {
             try{
+                var script = runtime.getCurrentScript();
+                var Template = script.getParameter({ name: "custscript_email_template" });
+                var userObj = runtime.getCurrentUser();
+                var userID = userObj.id
+                log.debug({
+                    title: 'Data',
+                    details: JSON.stringify({User_ID: userID, Template : Template})
+                })
                 var Record = context.newRecord;
                 var recordId = Record.id;
                 log.debug('recordId',recordId);
@@ -27,9 +35,11 @@
                 });   
                 if(!isNullOrEmpty(Vendor_email)&&!isNullOrEmpty(Attached)){
                     var senderId = 4148
+                    /*
                     var attachments_File = file.load({    
                         id: Attached
                     });
+                    */
                     var vendorID = Record.getValue({
                         fieldId: 'entity'
                     });
@@ -43,7 +53,7 @@
                         recipients: Vendor_email,
                         subject: 'Test Sample Email Module',
                         body: 'email body',
-                        attachments:[file.load({id: Attached})] ,
+                        //attachments:[file.load({id: Attached})] ,
                         relatedRecords: {
                             entityId: vendorID,
                             customRecord: {
