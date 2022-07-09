@@ -301,19 +301,20 @@
                             var Sub_Type = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_agr_sub_type'});
                             var Rate = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_reccuring_rate'});
                             var First_Period = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_month_first_period'});
+                            var Billing_Cycle_2 = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_billing_cycle_2'});
+                            var Rate_2 = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_recurring_second_year'});
                             if(isNullOrEmpty(Billing_Cycle)){ Misssing_Fieds.push('מחזור חיוב')};
                             if(isNullOrEmpty(Sub_Type)){ Misssing_Fieds.push('תת הסכם')};
                             if(isNullOrEmpty(Rate)){ Misssing_Fieds.push('חיוב מחזורי')};
-                            if (!isNullOrEmpty(First_Period)){
-                                var Billing_Cycle_2 = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_billing_cycle_2'});
-                                var Rate_2 = rec.getCurrentSublistValue({sublistId: 'item',fieldId: 'custcol_recurring_second_year'});
+                            if (!isNullOrEmpty(Billing_Cycle_2) || !isNullOrEmpty(Rate_2)){
+                                if(isNullOrEmpty(First_Period)){ Misssing_Fieds.push('מחזור מספר חודשים עבור התקופה הראשונה')};
                                 if(isNullOrEmpty(Billing_Cycle_2)){ Misssing_Fieds.push('מחזור חיוב תקופה שנייה')};
                                 if(isNullOrEmpty(Rate_2)){ Misssing_Fieds.push('חויב מחזורי תקופה שנייה')};
                             }
                         }
                         var Error_Length = Misssing_Fieds.length;
                         if (Error_Length == 1){
-                            ui.alert({title: '<p style="text-align:right;" dir="rlt">שדה חסר</p>',message:'<p style="text-align:right;" dir="rlt">אנא הזן '+Misssing_Fieds+'על מנת לשמור את השורה </p>' })
+                            ui.alert({title: '<p style="text-align:right;" dir="rlt">שדה חסר</p>',message:'<p style="text-align:right;" dir="rlt"> אנא הזן '+Misssing_Fieds+' '+' על מנת לשמור את השורה </p>' })
                             return false
                         }
                         log.debug({
